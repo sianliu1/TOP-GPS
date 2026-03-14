@@ -1,0 +1,37 @@
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+bin/
+build/
+dist/
+tmp/
+VesselVio.spec
+build_app.sh
+entitlements.plist
+fix_app.py
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# General
+.DS_Store
+
+# Unit test / coverage reports
+.tox/
+.coverage
+htmlcov/
+
+# VSCode
+*.code-workspace
+.vscode/
+
+# VesselVio Specific
+library/cache/results_cache.csv
+a.py
+
+
+

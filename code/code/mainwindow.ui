@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1920</width>
+    <height>1080</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,6,1">
+      <item>
+       <widget class="QWidget" name="widget_2" native="true">
+        <widget class="QPushButton" name="btn_input_data">
+         <property name="geometry">
+          <rect>
+           <x>50</x>
+           <y>50</y>
+           <width>151</width>
+           <height>41</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>输入数据</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="btn_autorec">
+         <property name="geometry">
+          <rect>
+           <x>50</x>
+           <y>150</y>
+           <width>151</width>
+           <height>41</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>自动重建</string>
+         </property>
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="2,5">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout" stretch="8,1">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QWidget" name="win1" native="true"/>
+            </item>
+            <item>
+             <widget class="QScrollBar" name="Bar1">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="8,1">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QWidget" name="win2" native="true"/>
+            </item>
+            <item>
+             <widget class="QScrollBar" name="Bar2">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QWidget" name="win3" native="true"/>
+            </item>
+            <item>
+             <widget class="QScrollBar" name="Bar3">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QWidget" name="win4" native="true"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QWidget" name="label_plate" native="true">
+        <widget class="QWidget" name="label_menu" native="true">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>20</y>
+           <width>221</width>
+           <height>951</height>
+          </rect>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1920</width>
+     <height>33</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>窗宽窗位</string>
+    </property>
+    <addaction name="actionbone"/>
+    <addaction name="actionlung"/>
+    <addaction name="actionliver"/>
+    <addaction name="actionbrain"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>导出</string>
+    </property>
+    <addaction name="actionstl"/>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionbone">
+   <property name="text">
+    <string>骨窗</string>
+   </property>
+  </action>
+  <action name="actionlung">
+   <property name="text">
+    <string>肺窗</string>
+   </property>
+  </action>
+  <action name="actionliver">
+   <property name="text">
+    <string>纵膈窗</string>
+   </property>
+  </action>
+  <action name="actionbrain">
+   <property name="text">
+    <string>脑窗</string>
+   </property>
+  </action>
+  <action name="actionstl">
+   <property name="text">
+    <string>导出.stl文件</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,118 @@
+{
+  "models": {
+    "lungsystem": [
+      "lung",
+      "vessel",
+      "nodule"
+    ]
+  },
+  "tags": {
+    "lungsystem": {
+      "lung": {
+        "13": {
+          "name": "lu_lobe",
+          "color": [
+            1,
+            0.8,
+            0.8
+          ],
+          "smooth_type": "2"
+        },
+        "14": {
+          "name": "ll_lobe",
+          "color": [
+            1,
+            0.8,
+            0.8
+          ],
+          "smooth_type": "2"
+        },
+        "15": {
+          "name": "ru_lobe",
+          "color": [
+            1,
+            0.8,
+            0.8
+          ],
+          "smooth_type": "2"
+        },
+        "16": {
+          "name": "rm_lobe",
+          "color": [
+            1,
+            0.8,
+            0.8
+          ],
+          "smooth_type": "2"
+        },
+        "17": {
+          "name": "rl_lobe",
+          "color": [
+            1,
+            0.8,
+            0.8
+          ],
+          "smooth_type": "2"
+        }
+      },
+      "vessel": {
+        "1": {
+          "name": "artery",
+          "color": [
+            1,
+            0,
+            0
+          ],
+          "smooth_type": "3"
+        },
+        "2": {
+          "name": "vein",
+          "color": [
+            0,
+            0,
+            1
+          ],
+          "smooth_type": "3"
+        },
+        "3": {
+          "name": "bronchus",
+          "color": [
+            1,
+            1,
+            1
+          ],
+          "smooth_type": "3"
+        }
+      },
+      "nodule": {
+        "1": {
+          "name": "nodule",
+          "color": [
+            1,
+            1,
+            0
+          ],
+          "smooth_type": "1"
+        }
+      }
+    }
+  },
+  "window_level": {
+    "lung": {
+      "window": 1200,
+      "level": -400
+    },
+    "liver": {
+      "window": 350,
+      "level": 40
+    },
+    "bone": {
+      "window": 1000,
+      "level": 150
+    },
+    "brain": {
+      "window": 80,
+      "level": 40
+    }
+  }
+}
