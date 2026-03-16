@@ -1,168 +1,192 @@
-# Pulmonary-Tree
+# Pulmonary Watershed Analysis Navigation System
 
-`pulmonary-tree/` is an independent submodule for pulmonary tree grading, designed for graph-based modeling and branch-level inference on bronchial, arterial, and venous tree structures. It can be used either as a standalone inference package or as an upstream grading engine invoked by the main application for watershed analysis.
+This project is a pulmonary watershed analysis navigation system for chest CT, with the application entry located in [main.py](main.py). It integrates multi-planar image review, automatic anatomical reconstruction, tree-structure grading, and lobe-constrained watershed analysis into a single desktop workflow.
 
-From a task-definition perspective, this module does not target generic voxel-wise segmentation. Instead, it performs structured interpretation of an already segmented tree mask: given a binary airway or vessel volume, it reconstructs an explicit graph representation and predicts anatomically meaningful branch labels.
+ It is a workflow-oriented analysis platform that combines anatomical reconstruction with structure-aware regional interpretation, allowing the user to move from raw CT data to interactive 2D/3D watershed navigation in one interface.
 
-## Role in the Overall System
+## Overview
 
-Within the full project pipeline, `pulmonary-tree/` sits between 3D anatomical reconstruction and downstream watershed mapping. Its responsibility is tree-structure semantic grading:
+The overall processing logic can be summarized as:
 
-- Input: segmented bronchial, arterial, or venous volumes
-- Intermediate representation: skeleton points, radius estimates, graph topology, and sampled point clouds
-- Output: voxel-wise volumes with grading labels
+`CT input -> anatomical reconstruction -> tree grading -> watershed mapping -> interactive navigation`
 
-In the main application, this module is currently invoked through [new_nii_infer.py](pulmonary-tree/new_nii_infer.py), and the bronchial grading result is further used for lobe-constrained watershed analysis.
+The project is organized around three main layers:
 
-## Method Overview
+1. User interface and workflow orchestration.
+2. Automatic segmentation and 3D anatomical reconstruction.
+3. Tree grading and watershed-oriented region mapping.
 
-The overall processing chain can be summarized as follows:
+The main GUI is implemented in [presenter.py](presenter.py), while [main.py](main.py) is responsible for launching the application.
 
-1. Read a binary tree-structure volume.
-2. Crop and preprocess the volume.
-3. Extract the centerline through skeletonization.
-4. Estimate local radii and construct a graph representation.
-5. Prune short terminal branches and filter isolated short segments.
-6. Build a joint representation consisting of graph nodes, edges, and sampled voxel points.
-7. Run implicit inference with a point-graph fusion network.
-8. Write the predicted labels back to the voxel space.
+## System Architecture
 
-Compared with purely voxel-based convolutional pipelines, this module emphasizes explicit topological modeling of tree structures. Its core design combines:
-
-- local geometric cues from point-cloud representations
-- topological connectivity from graph representations
-- dense voxel prediction from an implicit inference module
-
-## Inference Pipeline
-
-The main inference entry is [new_nii_infer.py](pulmonary-tree/new_nii_infer.py). In the current implementation, inference consists of the following stages.
-
-### 1. Volume Preprocessing
-
-The input is typically a binary NIfTI volume produced by an upstream segmentation stage. The module first reads the mask with `SimpleITK`, then relies on `VesselVio` utilities for:
-
-- valid-region cropping
-- skeleton extraction
-- radius estimation
-- graph construction
-- graph pruning and short-branch filtering
-
-The goal of this stage is to convert the raw voxel mask into an explicit structural representation suitable for topology-aware inference.
-
-### 2. Joint Point-Graph Encoding
-
-At the representation level, the module constructs two parallel inputs:
-
-- a graph input defined by node coordinates and edge connectivity
-- a point-cloud input sampled from nonzero voxels
-
-Node coordinates and sampled points are normalized before entering the network. The number of graph nodes is padded to a fixed `max_node` size to match the network input interface. Different tasks use different node limits, for example:
-
-- Airway: `Max_Node = 519`
-- Artery: `Max_Node = 1813`
-- Vein: `Max_Node = 1691`
-
-These settings are defined in [dataset_specs_airway.json](pulmonary-tree/specs/dataset_specs_airway.json), [dataset_specs_artery.json](pulmonary-tree/specs/dataset_specs_artery.json), and [dataset_specs_vein.json](pulmonary-tree/specs/dataset_specs_vein.json).
-
-### 3. Network Inference
-
-The main model is `IPGN`, implemented in [pg_model.py](pulmonary-tree/model/pg_model.py). Based on [network_specs.json](pulmonary-tree/specs/network_specs.json), the architecture contains the following components:
-
-- Graph Encoder: a GAT-based graph encoder
-- Point Encoder: a point-cloud encoder
-- Point-Graph Fusion: a fusion module for point and graph features
-- Implicit Module: an implicit decoder for dense voxel prediction
-
-This is therefore not a conventional single-path network. It is a hybrid point-graph framework that jointly models geometry and topology, which is particularly suitable for stable hierarchical prediction on pulmonary tree structures.
-
-### 4. Label Projection Back to Volume Space
-
-The network predicts labels for all target voxel locations, and those predictions are then projected back into the original volume coordinates to generate the final `result.nii`. In the upper-level application, this output can be used directly for pulmonary segment assignment, vascular grading visualization, or watershed analysis.
-
-## Supported Tasks
-
-The current implementation supports three tree-grading tasks, controlled by the `type` argument in [new_nii_infer.py](pulmonary-tree/new_nii_infer.py):
-
-- `0`: airway
-- `1`: artery
-- `2`: vein
-
-All three tasks share the same inference framework but use different weights and task-specific settings:
-
-- `network/airway_weigths.pth`
-- `network/artery_weigths.pth`
-- `network/vein_weigths.pth`
-
-The class count is configured as `19`, corresponding to the grading label system used by the model.
-
-## Directory Structure
-
-The most relevant files and folders for understanding this module are:
-
-- [new_nii_infer.py](pulmonary-tree/new_nii_infer.py): current main inference entry, producing `result.nii`
-- [nii_infer.py](pulmonary-tree/nii_infer.py): earlier inference experiment script
-- [train_network.py](pulmonary-tree/train_network.py): training entry point
-- [reconstruction_inference.py](pulmonary-tree/reconstruction_inference.py): reconstruction inference entry
-- [specs](pulmonary-tree/specs): network, training, and dataset configuration files
-- [network](pulmonary-tree/network): inference weights and network configuration
-- [model](pulmonary-tree/model): model definitions, training logic, and inference implementation
-- [VesselVio](pulmonary-tree/VesselVio): preprocessing, graph construction, and feature extraction code for tree structures
-
-## Training and Configuration
-
-The training entry is [train_network.py](pulmonary-tree/train_network.py). The current training workflow contains multiple stages:
-
-- point encoder pretraining
-- graph encoder pretraining
-- point-graph fusion training
-- implicit module training
-
-The main configuration files are:
-
-- [network_specs.json](pulmonary-tree/specs/network_specs.json)
-- [train_inference_specs.json](pulmonary-tree/specs/train_inference_specs.json)
-- task-specific dataset spec files under `specs/`
-
-An example training command is:
-
-```bash
-python train_network.py -d dataset_specs_airway.json
+```text
+                    +----------------------+
+                    |      main.py         |
+                    |   Application Entry  |
+                    +----------+-----------+
+                               |
+                               v
+                    +----------------------+
+                    |    presenter.py      |
+                    |   UI / Workflow Hub  |
+                    +----+------------+----+
+                         |            |
+              +----------+            +------------------+
+              |                                            |
+              v                                            v
+   +----------------------+                   +----------------------+
+   |      nnunet/         |                   |   pulmonary-tree/    |
+   | Segmentation Engine  |                   |  Tree Grading Engine |
+   +----------+-----------+                   +----------+-----------+
+              |                                            |
+              v                                            v
+   +----------------------+                   +----------------------+
+   | 3D Reconstruction &  |                   | Branch / Segment     |
+   | Anatomical Models    |                   | Classification       |
+   +----------+-----------+                   +----------+-----------+
+              |                                            |
+              +--------------------+-----------------------+
+                                   |
+                                   v
+                    +-------------------------------+
+                    | Watershed Mapping in Main App |
+                    | Lobe-constrained Region Parse |
+                    +---------------+---------------+
+                                    |
+                                    v
+                    +-------------------------------+
+                    | 2D/3D Interactive Navigation  |
+                    +-------------------------------+
 ```
 
-## Inference Usage
+## Main Components
 
-An example inference command is:
+### 1. Main Navigation Interface
+
+The main window serves as the orchestration layer of the system. It provides:
+
+- CT data loading
+- three orthogonal slice viewers
+- a 3D rendering window
+- anatomical object visibility and opacity control
+- automatic reconstruction entry
+- watershed analysis entry
+
+This layer is designed as an interactive navigation workspace rather than a static viewer. It allows synchronized inspection of slices, reconstructed surfaces, and watershed-derived segmental regions.
+
+### 2. 3D Reconstruction
+
+3D reconstruction is mainly supported by [nnunet](nnunet) and invoked through [reconstruction.py](reconstruction.py). In the current implementation, the reconstruction stage produces anatomical structures including:
+
+- the five pulmonary lobes
+- arteries
+- veins
+- bronchus
+
+The resulting label volumes are converted into 3D polygonal models and rendered in the GUI. This stage provides the anatomical prior required for downstream grading and watershed mapping.
+
+### 3. Tree Grading and Watershed Analysis
+
+Tree grading is provided by the independent submodule [pulmonary-tree](pulmonary-tree). That module is responsible for graph-aware grading of airway and vascular tree structures.
+
+In the main project, watershed analysis is built on top of the grading result rather than treated as a separate isolated step. In the current workflow, the application:
+
+1. reconstructs the target lobe and bronchial structure
+2. calls the tree-grading module
+3. filters grading labels according to the selected lobe
+4. maps lobe voxels to nearby graded branches
+5. reconstructs and visualizes the resulting segment-level regions
+
+For this reason, the project groups tree grading and watershed analysis together at the system level: the grading stage provides the structural semantics, and the watershed stage turns those semantics into lobe-constrained regional navigation.
+
+## Repository Structure
+
+The most relevant files and directories are:
+
+- [main.py](main.py): application entry point
+- [presenter.py](presenter.py): main window logic and workflow control
+- [reconstruction.py](reconstruction.py): segmentation-to-surface reconstruction pipeline
+- [config.json](config.json): anatomical labels, colors, smoothing types, and window presets
+- [mainwindow.ui](mainwindow.ui): Qt UI definition
+- [nnunet](nnunet): segmentation and reconstruction backend
+- [pulmonary-tree](pulmonary-tree): independent tree-grading package
+
+In short:
+
+- [nnunet](nnunet) recovers anatomical structures from CT volumes.
+- [pulmonary-tree](pulmonary-tree) assigns structural grading labels to tree-like anatomy.
+- The main application fuses both outputs into an interactive watershed navigation workflow.
+
+## Environment Setup
+
+This repository is best treated as a Windows-based research prototype. The GUI stack, reconstruction pipeline, and grading components depend on multiple medical-imaging and deep-learning libraries, and the bundled dependency file is closer to a recorded working environment than to a strict minimal specification.
+
+### Recommended Base Environment
+
+- Windows
+- Python 3.10 or 3.11 for the main GUI application
+- CUDA-enabled PyTorch if GPU inference is required
+
+### Install Dependencies
+
+Create and activate a virtual environment first, then install the main dependencies.
+
+Example with `conda`:
 
 ```bash
-python new_nii_infer.py -i input_mask.nii.gz -t 0 -o output_dir
+conda create -n watershed-nav python=3.11 -y
+conda activate watershed-nav
 ```
 
-Argument description:
+Then install the project dependencies:
 
-- `-i`: input binary tree-structure volume
-- `-t`: task type, where `0/1/2` correspond to airway, artery, and vein
-- `-o`: output directory, where the result is saved as `result.nii`
+```bash
+pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu118
+pip install -r requiment.txt
+pip install -e .
+```
 
-When this module is used inside the main GUI application, it is typically not called manually from the command line. Instead, the upper-level application prepares the input volume, runs the inference process, and reads the generated result automatically.
+Notes:
 
-## Dependencies
+- [requiment.txt](requiment.txt) contains some machine-specific entries, including local editable paths and a local Torch wheel reference. These may need to be adjusted on another machine before installation.
+- The repository already includes a local [setup.py](setup.py) for the bundled `nnunet` package. If needed, install it in editable mode with:
 
-Based on the current implementation, the module mainly depends on the following components:
 
-- Python 3.9
-- PyTorch
-- PyTorch Geometric
-- SimpleITK
-- NumPy
-- VesselVio
+- If you plan to use the tree-grading submodule directly from source rather than via a packaged executable, also review [pulmonary-tree/README.md](pulmonary-tree/README.md) and its dependency notes.
 
-The repository includes [requirments.txt](pulmonary-tree/requirments.txt) as an environment record. However, its content is closer to a snapshot of an existing runtime environment than to a strict minimal dependency specification. For environment reproduction, it should therefore be complemented with the actual imports used by the codebase.
+### Core Runtime Libraries
 
-## Relation to the Main Application
+The project relies primarily on:
 
-In the upper-level project, `pulmonary-tree/` acts as a structure-grading engine that can run independently or be invoked by the main application.
+- PySide6 for the GUI
+- VTK for 2D/3D rendering
+- SimpleITK, nibabel, and pydicom for medical-image IO
+- PyTorch for model inference
+- the local [nnunet](nnunet) package for segmentation-based reconstruction
+- the local [pulmonary-tree](pulmonary-tree) package for tree grading
 
-- In standalone mode, it performs tree-structure grading and outputs a labeled volume.
-- In integrated mode, it serves as the upstream grading module for watershed analysis.
+## Launching the Application
 
-In short, this submodule is the core component for semantic grading and structured interpretation of pulmonary tree anatomy.
+The main application is started from the repository root:
+
+```bash
+python main.py
+```
+
+After launch, the normal usage flow is:
+
+1. load CT data
+2. inspect the three orthogonal views
+3. run automatic reconstruction
+4. select a target lobe
+5. trigger watershed analysis
+6. inspect the generated 3D segmental or watershed regions
+
+## Runtime Notes
+
+- The GUI expects a valid [config.json](config.json) and the corresponding reconstruction labels defined there.
+- Reconstruction and grading depend on local model files being available.
+- The current codebase is oriented toward research use and reviewer demonstration rather than one-click general deployment.
+- Some packaged or external inference components may be resolved differently across environments, especially if grading is executed through a compiled executable instead of direct Python invocation.
+
