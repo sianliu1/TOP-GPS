@@ -1,4 +1,4 @@
-# Pulmonary Watershed Analysis Navigation System
+# Topographic watershed General Pulmonary Segmentation (TOP-GPS)
 
 This project is a pulmonary watershed analysis navigation system for chest CT, with the application entry located in [main.py](main.py). It integrates multi-planar image review, automatic anatomical reconstruction, tree-structure grading, and lobe-constrained watershed analysis into a single desktop workflow.
 
